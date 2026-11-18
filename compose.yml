@@ -1,42 +1,69 @@
 ---
 services:
   db:
-    image: shaikmustafa/flm2026:dbimage
+    image: modasai/python-libapp:db
     ports:
-      - "3306:3306"
+      - 3306:3306
+    networks:
+      - my_network
     deploy:
       replicas: 1
+      restart_policy:
+        condition: on-failure
+      
   auth_service:
-    image: shaikmustafa/flm2026:authimage
+    image: modasai/python-libapp:auth
     ports:
-      - "5001:5001"
+      - 5001:5001
+    networks:
+      - my_network
+    depends_on:
+        - db
     deploy:
       replicas: 1
-    depends_on:
-      - db
+      restart_policy:
+        condition: on-failure
+      
   book_service:
-    image: shaikmustafa/flm2026:bookimage
+    image: modasai/python-libapp:book
     ports:
-      - "5002:5002"
+      - 5002:5002
+    networks:
+      - my_network
+    depends_on:
+        - db
     deploy:
       replicas: 1
-    depends_on:
-      - db
+      restart_policy:
+        condition: on-failure
   borrow_service:
-    image: shaikmustafa/flm2026:borrowimage
+    image: modasai/python-libapp:borrow
     ports:
-      - "5003:5003"
+      - 5003:5003
+    networks:
+      - my_network
+    depends_on:
+        - db
     deploy:
       replicas: 1
-    depends_on:
-      - db
+      restart_policy:
+        condition: on-failure
   app_service:
-    image: shaikmustafa/flm2026:appimage
+    image: modasai/python-libapp:app
     ports:
-      - "5000:5000"
+      - 5000:5000
+    networks:
+      - my_network
+    depends_on:
+        - auth_service
+        - book_service
+        - borrow_service
     deploy:
       replicas: 1
-    depends_on:
-      - auth_service
-      - book_service
-      - borrow_service
+      restart_policy:
+        condition: on-failure
+      
+
+networks:
+  my_network:
+    driver: overlay
